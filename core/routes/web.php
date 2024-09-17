@@ -37,5 +37,7 @@ Route::controller('SiteController')->group(function () {
     Route::get('/{slug}', 'pages')->name('pages');
     Route::get('/', 'index')->name('home');
     Route::get('/user/fdcomdashboard', [UserController::class, 'fdComHome'])->name('user.fdcomdashboard');
-    
+    // Transaction (Convert and Transfer)
+    Route::get('/user/convert', [UserController::class, 'trxConvert'])->name('user.convert');
+    Route::get('/user/transfer', [UserController::class, 'trxTransfer'])->name('user.transfer');
 });

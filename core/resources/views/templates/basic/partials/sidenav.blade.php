@@ -26,18 +26,7 @@
                     <span class="text">@lang('Mall Dashboard')</span>
                 </a>
             </li>
-            <li class="sidebar-menu-list__item">
-                <a href="{{ route('user.invest.history') }}" class="sidebar-menu-list__link {{ menuActive('user.invest*') }}">
-                    <span class="icon"><i class="fas fa-dolly-flatbed"></i></span>
-                    <span class="text">@lang('My Investments')</span>
-                </a>
-            </li>
-            <li class="sidebar-menu-list__item">
-                <a href="{{ route('user.profit.history') }}" class="sidebar-menu-list__link {{ menuActive('user.profit.history') }}">
-                    <span class="icon"><i class="fas fa-coins"></i></span>
-                    <span class="text">@lang('Profit History')</span>
-                </a>
-            </li>
+            <!-- Deposit -->
             <li class="sidebar-menu-list__item has-dropdown">
                 <a href="javascript:void(0)" class="sidebar-menu-list__link {{ menuActive('user.deposit*', 3) }}">
                     <span class="icon"><i class="fas fa-wallet"></i></span>
@@ -60,6 +49,36 @@
                     </ul>
                 </div>
             </li>
+            <!-- Transactions -->
+            <li class="sidebar-menu-list__item has-dropdown">
+                <a href="javascript:void(0)" class="sidebar-menu-list__link {{ menuActive(['user.convert', 'user.transfer'], 3) }}">
+                    <span class="icon"><i class="fas fa-wallet"></i></span>
+                    <span class="text">@lang('Transaction Wallet')</span>
+                </a>
+                <div class="sidebar-submenu {{ menuActive('user.convert*', 2) }}">
+                    <ul class="sidebar-submenu-list">
+                        <li class="sidebar-submenu-list__item">
+                            <a href="{{ route('user.convert') }}"
+                                class="sidebar-submenu-list__link {{ menuActive('user.convert') }}">
+                                <span class="text">@lang('Convert')</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-submenu-list__item">
+                            <a href="{{ route('user.transfer') }}"
+                                class="sidebar-submenu-list__link {{ menuActive('user.transfer*', 1) }}">
+                                <span class="text">@lang('Transfer Money')</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="sidebar-menu-list__item">
+                <a href="{{ route('user.transactions') }}" class="sidebar-menu-list__link {{ menuActive('user.transactions') }}">
+                    <span class="icon"><i class="fas fa-exchange-alt"></i></span>
+                    <span class="text">@lang('Transaction History')</span>
+                </a>
+            </li>
+            <!-- Withdrawal -->
             <li class="sidebar-menu-list__item has-dropdown">
                 <a href="javascript:void(0)" class="sidebar-menu-list__link {{ menuActive('user.withdraw*', 3) }}">
                     <span class="icon"><i class="far fa-credit-card"></i></span>
@@ -83,9 +102,15 @@
                 </div>
             </li>
             <li class="sidebar-menu-list__item">
-                <a href="{{ route('user.transactions') }}" class="sidebar-menu-list__link {{ menuActive('user.transactions') }}">
-                    <span class="icon"><i class="fas fa-exchange-alt"></i></span>
-                    <span class="text">@lang('Transactions')</span>
+                <a href="{{ route('user.invest.history') }}" class="sidebar-menu-list__link {{ menuActive('user.invest*') }}">
+                    <span class="icon"><i class="fas fa-dolly-flatbed"></i></span>
+                    <span class="text">@lang('My Investments')</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-list__item">
+                <a href="{{ route('user.profit.history') }}" class="sidebar-menu-list__link {{ menuActive('user.profit.history') }}">
+                    <span class="icon"><i class="fas fa-coins"></i></span>
+                    <span class="text">@lang('Profit History')</span>
                 </a>
             </li>
 

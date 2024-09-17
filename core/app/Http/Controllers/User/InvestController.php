@@ -55,8 +55,8 @@ class InvestController extends Controller
             return $this->gateWayPayment($request, $amount, $property->id, isFullAmount: $isFullAmount);
         }
 
-        if ($amount > $user->balance) {
-            $notify[] = ['error', 'You don\'t have sufficient balance'];
+        if ($amount > $user->transaction_wallet) {
+            $notify[] = ['error', 'You don\'t have sufficient transaction wallet'];
             return back()->withNotify($notify);
         }
 
@@ -112,8 +112,9 @@ class InvestController extends Controller
             return $this->gateWayPayment($request, $installmentAmount, 0, $id, $installmentId);
         }
 
-        if ($installmentAmount > $user->balance) {
-            $notify[] = ['error', 'Don\'t have sufficient balance'];
+        // Change balance to transaction_wallet
+        if ($installmentAmount > $user->transaction_wallet) {
+            $notify[] = ['error', 'Don\'t have sufficient transaction wallet balance'];
             return back()->withNotify($notify);
         }
 

@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Invest;
 use App\Models\Profit;
 use App\Models\Deposit;
+use App\Models\Wallet;
 use App\Models\Referral;
 use App\Constants\Status;
 use App\Lib\FormProcessor;
@@ -29,6 +30,7 @@ class UserController extends Controller
         $registrationFeeSum            = Invest::where('user_id', $user->id)->sum('basic_reg_fee');
         $totalAfterFees                = $paidAmountSum - $registrationFeeSum;
         $totalInvestments              = Invest::where('user_id', $user->id)->count();
+        $transactionWallet             = User::where('id', $user->id)->first()->transaction_wallet;
         $userId                        = $user->id;
         
         //the starting ID is from 18 downwards
@@ -108,8 +110,9 @@ class UserController extends Controller
         $widget['direct_sales_volume'] = $directSalesVolume($userId, $propertyId);
         
         $widget['team_sales_volume']   = $teamSalesVolume($userId, $propertyId);
-        $widget['total_property']       = $totalInvestments;
+        $widget['total_property']      = $totalInvestments;
         $widget['balance']             = $user->balance;
+        $widget['trx_wallet']          = number_format($transactionWallet, 2); // 2 decimal places
         $widget['total_deposit']       = Deposit::where('user_id', $user->id)->where('status', Status::PAYMENT_SUCCESS)->sum('amount');
         $widget['total_withdraw']      = Withdrawal::where('user_id', $user->id)->where('status', Status::PAYMENT_SUCCESS)->sum('amount');
         $widget['total_profit']        = Invest::where('user_id', $user->id)->where('invest_status', Status::COMPLETED)->sum('total_profit');
@@ -342,6 +345,108 @@ class UserController extends Controller
         $pageTitle = 'Deposit History';
         $deposits = auth()->user()->deposits()->searchable(['trx'])->with(['gateway'])->orderBy('id', 'desc')->paginate(getPaginate());
         return view($this->activeTemplate . 'user.deposit_history', compact('pageTitle', 'deposits'));
+    }
+
+    // Method to show the conversion form
+    public function showConvertForm()
+    {
+        $pageTitle = 'Convert Balance';
+        return view($this->activeTemplate . 'user.convert', compact('pageTitle'));
+    }
+    
+    public function trxConvert(Request $request){
+        $user = auth()->user();
+        $request->validate([
+            'amount' => 'numeric|min:0',
+        ]);
+
+        $amount = $request->input('amount');
+        
+        if ($user->balance < $amount) {
+            $notify[] = ['error', 'You have Insufficient balance'];
+            return redirect()->route('user.convert')->withNotify($notify);
+        }
+        
+        $user->balance -= $amount;
+        $user->transaction_wallet += $amount;
+        $user->save();
+        $notify[] = ['success', 'Balance Converted Successfully!'];
+        
+        $trx = getTrx();
+        $transaction               = new Transaction();
+        $transaction->user_id      = $user->id;
+        $transaction->amount       = $amount;
+        $transaction->charge       = 0;
+        $transaction->post_balance = $user->balance;
+        $transaction->trx_type     = '-';
+        $transaction->trx          = $trx;
+        $transaction->remark       = 'balance conversion';
+        $transaction->details      = showAmount($amount) . ' converted from bonus balance to transaction wallet';
+        $transaction->save();
+        
+        return redirect()->route('user.home')->withNotify($notify);
+    }
+
+    public function showTransferForm(){
+        $pageTitle = 'Transfer Transaction Wallet';
+        return view($this->activeTemplate . 'user.transfer', compact('pageTitle'));    
+    }
+    
+    public function trxTransfer(Request $request){
+        $request->validate([
+            'username' => 'required|string|exists:users,username',
+            'amount' => 'required|numeric|min:0'
+        ]);
+
+        $user = auth()->user(); 
+        $recipient = User::where('username', $request->input('username'))->first(); // The recipient
+        $amount = $request->input('amount');
+
+        // Check if the recipient is the same as the sender
+        if ($recipient->id == $user->id) {
+            $notify[] = ['error', 'Oga sir, You cannot transfer balance to yourself!'];
+            return back()->withNotify($notify);
+        }
+
+        if ($user->transaction_wallet < $amount) {
+            $notify[] = ['error', 'Insufficient transaction wallet'];
+            return redirect()->route('user.transfer')->withNotify($notify);
+        }
+        // Deduct amount from sender
+        $user->transaction_wallet -= $amount;
+        $user->save();
+
+        // Add amount to recipient
+        $recipient->transaction_wallet += $amount;
+        $recipient->save();
+        
+        // transaction record for sender
+        $trx = getTrx(); // Function to generate a unique transaction ID
+        $transaction = new Transaction();
+        $transaction->user_id = $user->id;
+        $transaction->amount = -$amount; // Negative for debit
+        $transaction->charge = 0;
+        $transaction->post_balance = $user->transaction_wallet;
+        $transaction->trx_type = '-';
+        $transaction->trx = $trx;
+        $transaction->remark = 'Balance transfer to ' . $recipient->username;
+        $transaction->details = 'N' . showAmount($amount) . ' transferred to ' . $recipient->username;
+        $transaction->save();
+
+        // transaction record for recipient
+        $transaction = new Transaction();
+        $transaction->user_id = $recipient->id;
+        $transaction->amount = $amount; // Positive for credit
+        $transaction->charge = 0;
+        $transaction->post_balance = $recipient->transaction_wallet;
+        $transaction->trx_type = '+';
+        $transaction->trx = $trx;
+        $transaction->remark = 'Balance transfer from ' . $user->username;
+        $transaction->details = 'N' . showAmount($amount) . ' received from ' . $user->username;
+        $transaction->save();
+        $notify[] = ['success', 'Transaction wallet Transfered Successfully!'];
+
+        return redirect()->route('user.home')->withNotify($notify);   
     }
 
     public function show2faForm()

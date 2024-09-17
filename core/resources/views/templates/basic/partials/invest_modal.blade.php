@@ -134,7 +134,7 @@
                         </button>
                         <button type="button" class="flex-fill btn btn-outline--base" id="payBalanceButton">
                             <span class="active-badge"> <i class="las la-check"></i> </span>
-                            @lang('Pay via Balance')
+                            @lang('Pay via Transaction Wallet')
                         </button>
                     </div>
                     <button type="submit" class="flex-fill btn btn--base w-100">
