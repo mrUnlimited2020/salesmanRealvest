@@ -43,7 +43,9 @@ class InvestController extends Controller
         }
 
         $user   = auth()->user();
-        $amount = $property->per_share_amount;
+        
+        //updated to pick value from user input
+        $amount = $request->input('invest_amount');
 
         if ($property->invest_type == Status::INVEST_TYPE_INSTALLMENT && $request->invest_full_amount != 'true') {
             $amount = ($property->per_share_amount / 100) * $property->down_payment;
@@ -54,7 +56,7 @@ class InvestController extends Controller
         if ($request->method == 'gateway') {
             return $this->gateWayPayment($request, $amount, $property->id, isFullAmount: $isFullAmount);
         }
-
+        // 1st place balance was changed to transaction_wallet
         if ($amount > $user->transaction_wallet) {
             $notify[] = ['error', 'You don\'t have sufficient transaction wallet'];
             return back()->withNotify($notify);
@@ -64,6 +66,7 @@ class InvestController extends Controller
             $paymentType = Status::INVEST_TYPE_ONETIME;
         }
 
+        //further locate bal where this invest() was defined and change it too
         $propertyInvest = new PropertyInvest($property, paymentType: @$paymentType);
         $invest         = $propertyInvest->invest($amount);
 
@@ -112,7 +115,7 @@ class InvestController extends Controller
             return $this->gateWayPayment($request, $installmentAmount, 0, $id, $installmentId);
         }
 
-        // Change balance to transaction_wallet
+        // 2nd place balance was changed to transaction_wallet
         if ($installmentAmount > $user->transaction_wallet) {
             $notify[] = ['error', 'Don\'t have sufficient transaction wallet balance'];
             return back()->withNotify($notify);

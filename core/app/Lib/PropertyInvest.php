@@ -34,6 +34,7 @@ class PropertyInvest
         $this->paymentType = $paymentType;
     }
 
+    // NB: invest starts here
     public function invest($amount, $lateFee = 0)
     {
         if (!$this->installment) {
@@ -174,14 +175,14 @@ class PropertyInvest
         }
 
 
-        $this->user->balance -= $amount;
+        $this->user->transaction_wallet -= $amount;
         $this->user->save();
 
         $transaction               = new Transaction();
         $transaction->user_id      = $this->user->id;
         $transaction->invest_id    = $this->invest->id;
         $transaction->amount       = $amount;
-        $transaction->post_balance = $this->user->balance;
+        $transaction->post_balance = $this->user->transaction_wallet;
         $transaction->charge       = 0;
         $transaction->trx_type     = '-';
         $transaction->details      = $transactionDetails . $this->property->title . ' property';
@@ -193,7 +194,7 @@ class PropertyInvest
             'trx'             => $this->trx,
             'amount'          => showAmount($amount),
             'property_name'   => $this->property->title,
-            'post_balance'    => showAmount($this->user->balance),
+            'post_balance'    => showAmount($this->user->transaction_wallet),
             'paid_amount'     => showAmount($this->invest->paid_amount),
             'due_amount'      => showAmount($this->invest->due_amount),
             'invested_amount' => showAmount($this->invest->total_invest_amount),
@@ -203,7 +204,7 @@ class PropertyInvest
             notify($this->user, 'INVESTMENT', [
                 'amount'          => showAmount($this->invest->total_invest_amount),
                 'property_name'   => $this->property->title,
-                'post_balance'    => showAmount($this->user->balance),
+                'post_balance'    => showAmount($this->user->transaction_wallet),
                 'paid_amount'     => showAmount($this->invest->paid_amount),
                 'due_amount'      => showAmount($this->invest->due_amount),
             ]);
@@ -314,7 +315,7 @@ class PropertyInvest
         $invest->user_id                = $this->user->id;
         $invest->property_id            = $this->property->id;
         $invest->investment_id          = getTrx(10);
-        $invest->total_invest_amount    = $this->property->per_share_amount;
+        $invest->total_invest_amount    = $amount; //updated to reflect user input amount
         $invest->initial_invest_amount  = $amount;
         $invest->paid_amount            = $amount;
         $invest->due_amount             = $this->property->per_share_amount - $amount;
