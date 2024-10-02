@@ -35,10 +35,10 @@ class PropertyInvest
     }
 
     // NB: invest starts here
-    public function invest($amount, $lateFee = 0)
+    public function invest($amount, $duration, $lateFee = 0)
     {
         if (!$this->installment) {
-            $this->createInvest($amount);
+            $this->createInvest($amount, $duration);
             if (!$this->paymentType && $this->property->invest_type == Status::INVEST_TYPE_INSTALLMENT) {
                 $this->createInvestInstallment();
             }
@@ -303,7 +303,8 @@ class PropertyInvest
         return $this->invest;
     }
 
-    protected function createInvest($amount)
+    //added duration here to reflect on the db
+    protected function createInvest($amount, $duration)
     {
         $perInstallmentAmount = 0;
 
@@ -318,6 +319,7 @@ class PropertyInvest
         $invest->total_invest_amount    = $amount; //updated to reflect user input amount
         $invest->initial_invest_amount  = $amount;
         $invest->paid_amount            = $amount;
+        $invest->invest_duration        = $duration; //duration table and value added
         $invest->due_amount             = $this->property->per_share_amount - $amount;
         $invest->per_installment_amount = $perInstallmentAmount;
         $invest->profit_status          = Status::INVESTMENT_RUNNING;

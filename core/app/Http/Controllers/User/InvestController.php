@@ -18,6 +18,7 @@ class InvestController extends Controller
     {
         $request->validate([
             'invest_amount' => 'required|numeric|gt:0',
+            'duration' => 'required|string', // Validate that duration is selected
             'method'        => 'required|in:gateway,balance',
             'currency'      => 'required_if:method,gateway',
             'gateway'       => 'required_if:method,gateway',
@@ -47,6 +48,15 @@ class InvestController extends Controller
         //updated to pick value from user input
         $amount = $request->input('invest_amount');
 
+        //added to pick duration from user select choice
+        $duration = $request->input('duration');
+        if ($duration) {
+            # code...
+        }
+        else{
+
+        }
+
         if ($property->invest_type == Status::INVEST_TYPE_INSTALLMENT && $request->invest_full_amount != 'true') {
             $amount = ($property->per_share_amount / 100) * $property->down_payment;
         }
@@ -68,7 +78,7 @@ class InvestController extends Controller
 
         //further locate bal where this invest() was defined and change it too
         $propertyInvest = new PropertyInvest($property, paymentType: @$paymentType);
-        $invest         = $propertyInvest->invest($amount);
+        $invest         = $propertyInvest->invest($amount, $duration);
 
         $notify[] = ['success', 'Property invested successfully'];
 

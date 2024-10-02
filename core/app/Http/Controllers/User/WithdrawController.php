@@ -9,6 +9,8 @@ use App\Models\AdminNotification;
 use App\Models\Transaction;
 use App\Models\Withdrawal;
 use App\Models\WithdrawMethod;
+use App\Models\Invest;
+
 use Illuminate\Http\Request;
 
 class WithdrawController extends Controller
@@ -40,6 +42,28 @@ class WithdrawController extends Controller
         if ($request->amount > $user->balance) {
             $notify[] = ['error', 'You do not have sufficient balance for withdraw.'];
             return back()->withNotify($notify);
+        }
+
+        $userProfit = Invest::where('user_id', $user->id)->where('invest_status', Status::COMPLETED)->sum('total_profit');
+        $currentDate = now(); // Current date
+
+        // Get all completed investments for the user
+        $investments = Invest::where('user_id', $user->id)->where('invest_status', Status::COMPLETED)->get();
+
+        if ($userProfit > 0) {
+            foreach ($investments as $investment) {
+                // Get the creation date of the investment
+                $createdDate = $investment->created_at;
+        
+                // Calculate the difference in months
+                $durationMonths = $createdDate->diffInMonths($currentDate);
+
+                // Check against the invest_duration values
+                if ($durationMonths < $investment->invest_duration) {
+                    $notify[] = ['error', 'Your investment duration before withdrawal is not yet complete.'];
+                    return back()->withNotify($notify);
+                }
+            }
         }
 
         $charge = $method->fixed_charge + ($request->amount * $method->percent_charge / 100);

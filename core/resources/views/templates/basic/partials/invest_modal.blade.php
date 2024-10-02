@@ -16,7 +16,7 @@
                 <button class="close-btn" type="button" data-bs-dismiss="modal">
                     <i class="las fa-times"></i>
                 </button>
-            </div>
+            </div>x
             <div class="modal-body">
                 <form method="POST" action="{{ route('user.invest.store', encrypt(@$property->id)) }}" class="modal-form" id="investForm">
                     @csrf
@@ -24,7 +24,7 @@
                     <input name="currency" type="hidden">
                     <div class="modal-form__body">
                         <div class="mb-4">
-                            <ul class="modal-form__info">
+                            <!-- <ul class="modal-form__info">
                                 @if (@$property->invest_type == Status::INVEST_TYPE_INSTALLMENT)
                                     <li class="modal-form__info-item">
                                         <span class="label">@lang('Down Payment')</span>
@@ -55,7 +55,29 @@
                                         @lang(@$property->profit_back . ' days after investment completed')
                                     </span>
                                 </li>
-                            </ul>
+                            </ul> -->
+                        </div>
+                        <div class="form-group gateway-option">
+                            <label class="form-label required">@lang('Select Investment Duration')</label>
+                            <div class="duration-select">
+                                <div class="selected-duration d-flex justify-content-between align-items-center">
+                                    <p class="duration-title">@lang('Select One')</p>
+                                    <div class="icon-area">
+                                        <i class="las la-angle-down"></i>
+                                    </div>
+                                </div>
+                                <div class="duration-list d-none">
+                                    <div class="single-duration" data-value="">
+                                        @lang('Select One')
+                                    </div>
+                                    @foreach (['3 months', '6 months', '12 months'] as $duration)
+                                        <div class="single-duration" data-value="{{ $duration }}">
+                                            {{ $duration }}
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <input type="hidden" name="duration" value="">
+                            </div>
                         </div>
                         <div class="form-group">
                             <div class="d-flex justify-content-between flex-wrap">
@@ -128,10 +150,10 @@
                         </div>
                     </div>
                     <div class="modal-form__footer flex-row   flex-wrap form-group">
-                        <button type="button" class="flex-fill btn btn-outline--base active" id="payGatewayButton">
+                        <!-- <button type="button" class="flex-fill btn btn-outline--base active" id="payGatewayButton">
                             <span class="active-badge"> <i class="las la-check"></i> </span>
                             @lang('Pay via Gateway')
-                        </button>
+                        </button> -->
                         <button type="button" class="flex-fill btn btn-outline--base" id="payBalanceButton">
                             <span class="active-badge"> <i class="las la-check"></i> </span>
                             @lang('Pay via Transaction Wallet')
@@ -150,17 +172,39 @@
     <script>
         "use strict";
         (function($) {
+            // Custom Dropdown for Investment Duration
+            $('.selected-duration').on('click', function() {
+                $('.duration-list').toggleClass('d-none');
+                $(this).toggleClass('focus');
+                $(this).find('.icon-area i').toggleClass('la-angle-up').toggleClass('la-angle-down');
+            });
 
-            
-            $('input[name=invest_full_amount]').on('change', function() {
-                // Store the user's input value below
-                var userEnteredAmount = $('input[name=invest_amount]').val(); 
-                if (this.checked) {
-                    //$('input[name=invest_amount]').val({{ $property->per_share_amount }});
-                    $('input[name=invest_amount]').val(userEnteredAmount);
-                    
-                } else {
-                    $('input[name=invest_amount]').val({{ $initialInvestAmount }});
+            $(document).on('click', '.single-duration', function() {
+                var selectedValue = $(this).data('value');
+                $('.selected-duration .duration-title').text($(this).text());
+                $('input[name=duration]').val(selectedValue); // Set the hidden input value
+                $('.duration-list').addClass('d-none');
+                $('.selected-duration').removeClass('focus');
+                $('.selected-duration .icon-area i').removeClass('la-angle-up').addClass('la-angle-down');
+            });
+
+            // Close dropdown if clicked outside
+            $(document).on("click", function(event) {
+                var target = $(event.target);
+                if (!target.closest('.duration-select').length) {
+                    $('.duration-list').addClass('d-none');
+                    $('.selected-duration').removeClass('focus');
+                    $('.selected-duration .icon-area i').removeClass('la-angle-up').addClass('la-angle-down');
+                }
+            });
+
+            // Form submission validation
+            $('#investForm').on('submit', function(event) {
+                var duration = $('input[name=duration]').val();
+                if (!duration) {
+                    event.preventDefault(); // Prevent form submission
+                    alert('@lang('Please select an investment duration.')'); // Alert message
+                    $('.selected-duration').addClass('focus'); // Optional: to highlight the dropdown
                 }
             });
 
@@ -308,6 +352,36 @@
 
 @push('style')
     <style>
+        .duration-select {
+            border: 1px solid hsl(var(--base));
+            padding: 10px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .selected-duration {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .duration-list {
+            position: absolute;
+            background: white;
+            border: 1px solid hsl(var(--base) / 0.32);
+            width: 100%;
+            z-index: 10;
+        }
+
+        .single-duration {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .single-duration:hover {
+            background-color: hsl(var(--base) / 0.1);
+        }
+
         .invest-modal .form-check-input:focus {
             border-color: hsl(var(--base));
             box-shadow: none;
