@@ -156,6 +156,28 @@ class PropertyInvest
             $this->invest->property_name = 'easyland_package';
         }
 
+        //Addition of new feature for other kinds of partners for foodmall begin here
+        elseif($this->property->title == 'Basic Partner') {
+            $this->invest->basic_prtnr_fdreg = $this->invest->paid_amount;
+            $this->invest->property_name = 'basic_prtnr_fdreg';
+            $this->user->membership_type = 'Basic Partner';
+        }
+        elseif($this->property->title == 'Silver Partner') {
+            $this->invest->silver_prtnr_fdreg = $this->invest->paid_amount;
+            $this->invest->property_name = 'silver_prtnr_fdreg';
+            $this->user->membership_type = 'Silver Partner';
+        }
+        elseif($this->property->title == 'Gold Partner') {
+            $this->invest->gold_prtnr_fdreg = $this->invest->paid_amount;
+            $this->invest->property_name = 'gold_prtnr_fdreg';
+            $this->user->membership_type = 'Gold Partner';
+        }
+        elseif($this->property->title == 'Diamond Partner') {
+            $this->invest->diamond_prtnr_fdreg = $this->invest->paid_amount;
+            $this->invest->property_name = 'diamond_prtnr_fdreg';
+            $this->user->membership_type = 'Diamond Partner';
+        }
+
         $this->invest->save();
 
         $this->trx = getTrx();
@@ -214,6 +236,27 @@ class PropertyInvest
             case 'thrift_package':
                 if (gs()->thrift_commission && $this->user->ref_by) {
                     $this->referralCommission('thrift_commission', $amount);
+                }
+                break;
+
+            case 'basic_prtnr_fdreg':
+                if (gs()->basic_prtnr_fdreg_comm && $this->user->ref_by) {
+                    $this->fdRegReferralCommission('basic_prtnr_fdreg_comm', $amount);
+                }
+                break;
+            case 'silver_prtnr_fdreg':
+                if (gs()->silver_prtnr_fdreg_comm && $this->user->ref_by) {
+                    $this->fdRegReferralCommission('silver_prtnr_fdreg_comm', $amount);
+                }
+                break;
+            case 'gold_prtnr_fdreg':
+                if (gs()->gold_prtnr_fdreg_comm && $this->user->ref_by) {
+                    $this->fdRegReferralCommission('gold_prtnr_fdreg_comm', $amount);
+                }
+                break;
+            case 'diamond_prtnr_fdreg':
+                if (gs()->diamond_prtnr_fdreg_comm && $this->user->ref_by) {
+                    $this->fdRegReferralCommission('diamond_prtnr_fdreg_comm', $amount);
                 }
                 break;
 
@@ -538,6 +581,33 @@ class PropertyInvest
                 'level'        => ordinal($level),
                 'type'         => $comType,
             ]);
+        }
+    }
+
+    //foodCommunity registration referral comm starts here
+    public function fdRegReferralCommission($commissionType, $amount, $trx = null)
+    {
+        $user      = $this->user;
+        $levelInfo = Referral::where('commission_type', $commissionType)->get();
+        $level     = 0;
+
+        while (@$user->ref_by && $level < $levelInfo->count()) {
+            $user = User::find($user->ref_by);
+            $commission = ($levelInfo[$level]->percent / 100) * $amount;
+            $user->referrals_sales_comm += $commission;
+            $user->save();
+            $level++;
+
+            $transaction               = new Transaction();
+            $transaction->user_id      = $user->id;
+            $transaction->amount       = $commission;
+            $transaction->post_balance = $user->referrals_sales_comm;
+            $transaction->charge       = 0;
+            $transaction->trx_type     = '+';
+            $transaction->details      = 'Level ' . $level . ' Referral Commission From ' . $this->user->username . $commissionType;
+            $transaction->trx          =  $trx ?? $this->trx;
+            $transaction->remark       = $commissionType;
+            $transaction->save();
         }
     }
     
