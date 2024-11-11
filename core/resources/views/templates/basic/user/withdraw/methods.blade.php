@@ -4,6 +4,23 @@
         <div class="col-12">
             <form action="{{ route('user.withdraw.money') }}" method="post">
                 @csrf
+                <!-- Select Wallet -->
+                <div class="form-group">
+                    <label class="form--label">@lang('Select Wallet')</label>
+                    <select class="wallet-select-box" name="wallet-type" required>
+                        <option data-title="@lang('Select One')" value="">
+                            @lang('Select One')
+                        </option>
+                        
+                        <option data-title="FoodMall Wallet" value="FoodMall Wallet">
+                            @lang('FoodMall Wallet')
+                        </option>
+                        
+                        <option data-title="Investment Wallet" value="Investment Wallet">
+                            @lang('Investment Wallet')
+                        </option>
+                    </select>
+                </div>
 
                 <div class="form-group">
                     <label class="form--label">@lang('Select Method')</label>
