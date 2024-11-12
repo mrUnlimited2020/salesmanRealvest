@@ -264,34 +264,42 @@ class UserController extends Controller
         $user = User::find($userId);
 
         if ($user) {
-            $membershipType = $user->membership_type ?? 'Basic Member';
-            $PST = 0;
+            $membershipType = $user->membership_type ?? 'Basic Partner';
+
+            $PSTofDSV = 0;
+            $PSTofTSV = 0;
+
             switch ($membershipType) {
-                case 'Basic Member':
-                    $PST = 0.002 * $DSV;
-                    break;
                 case 'Basic Partner':
-                    $PST = 0.002 * $DSV + 0.001 * $TSV;
+                    $PSTofDSV = 0.001 * $DSV;
+                    $PSTofTSV = 0.001 * $TSV;
                     break;
                 case 'Silver Partner':
-                    $PST = 0.002 * $DSV + 0.002 * $TSV;
+                    $PSTofDSV = 0.002 * $DSV;
+                    $PSTofTSV = 0.002 * $TSV;                    
                     break;
                 case 'Gold Partner':
-                    $PST = 0.002 * $DSV + 0.003 * $TSV;
+                    $PSTofTSV = 0.003 * $TSV;                    
+                    $PSTofDSV = 0.003 * $DSV;
                     break;
                 case 'Basic Partner':
-                    $PST = 0.002 * $DSV + 0.005 * $TSV;
+                    $PSTofDSV = 0.004 * $DSV;
+                    $PSTofTSV = 0.004 * $TSV;                    
                     break;
                 default:
                     exit;
             }
-            $pt = number_format($PST, 2);
+            $pt1 = number_format($PSTofDSV, 2);
+            $pt2 = number_format($PSTofTSV, 2);
         }
         else {
-            $pt = '0.00'; // Default value if $user is not defined
+            $pt1 = '0.00'; // Default value if $user is not defined
+            $pt2 = '0.00'; // Default value if $user is not defined
+
         }
 
-        $widget['profit_sharing_token'] = $pt;
+        $widget['pst_of_dsv']          = $pt1;
+        $widget['pst_of_tsv']          = $pt2;
         $widget['total_property']      = $totalInvestments;
         $widget['balance']             = $user->balance;
         $widget['total_deposit']       = Deposit::where('user_id', $user->id)->where('status', Status::PAYMENT_SUCCESS)->sum('amount');

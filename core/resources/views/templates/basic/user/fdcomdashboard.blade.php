@@ -87,9 +87,24 @@
                     <i class="fas fa-credit-card"></i>
                 </div>
                 <div class="dashboard-widget__content">
-                    <span class="dashboard-widget__text">@lang('PST')</span>
+                    <span class="dashboard-widget__text">@lang('PST of DSV')</span>
                     <h6 class="dashboard-widget__number">
-                        {{ $widget['profit_sharing_token'] }} <span class="dashboard-widget__text">@lang('units')</span>
+                        {{ $widget['pst_of_dsv'] }} <span class="dashboard-widget__text">@lang('units')</span>
+                    </h6>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profit Sharing Token Wallet 2 -->
+        <div class="col-xl-4 col-lg-6 col-sm-4">
+            <div class="dashboard-widget flex-align">
+                <div class="dashboard-widget__icon flex-center">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <div class="dashboard-widget__content">
+                    <span class="dashboard-widget__text">@lang('PST of TSV')</span>
+                    <h6 class="dashboard-widget__number">
+                        {{ $widget['pst_of_tsv'] }} <span class="dashboard-widget__text">@lang('units')</span>
                     </h6>
                 </div>
             </div>
