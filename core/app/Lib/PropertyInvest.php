@@ -72,30 +72,32 @@ class PropertyInvest
         //New Tables For Different Wallets and to determine the property name
         //Pls NB: Always correct this title(on the server) to reflect the server title
         
-        if ($this->property->title == 'PSQ Voucher' 
-        || $this->property->title == 'Odourless Fufu'){
-            if($this->invest->paid_amount == 3000){
-                $this->invest->odourless_fufu = $this->invest->paid_amount;
-                //fufu starts here
-                $this->invest->property_name = 'odourless_fufu';
-            }
-            elseif($this->invest->paid_amount == 7000){
-                $this->invest->psq_invest = $this->invest->paid_amount;
-                $this->invest->property_name = 'voucher_package';
-            }
+        //PSQ Voucher
+        if($this->property->id == 10){
+            $this->invest->psq_invest = $this->invest->paid_amount;
+            $this->invest->property_name = 'voucher_package';
         }
         
+         //Fufu starts here
+        elseif($this->property->id == 32){
+            $this->invest->odourless_fufu = $this->invest->paid_amount;
+            $this->invest->property_name = 'odourless_fufu';
+        }
+
         //Grains start here 
         elseif  ($this->property->id == 22    //White Garri 12.5kg
         || $this->property->id == 21          //One paint bucket (Sealed)
-        || $this->property->id == 29          //Clean Sweet Rice x 10 Cups
-        || $this->property->id == 30) {        //Honey Beans x 10 Cups
+        || $this->property->id == 29          //Clean Sweet Rice x 10 Cups  
+        || $this->property->id == 30          //Honey Beans x 10 Cups
+        || $this->property->id == 35) {       //White Beans x 10 Cups
             $this->invest->grains = $this->invest->paid_amount;
             $this->invest->property_name = 'grains';
         }
         
         //Fish starts here
-        elseif ($this->property->id == 24    //Stockfish @2.5k
+        elseif ($this->property->id == 46    //Stockfish
+        || $this->property->id == 36    //148g Oron Ground Crayfish
+        || $this->property->id == 37    //550g Oron Ground Crayfish
         || $this->property->id == 25){       //Sweet Oron Crayfish @1.5k
             $this->invest->fish = $this->invest->paid_amount;
             $this->invest->property_name = 'fish';
@@ -103,6 +105,9 @@ class PropertyInvest
 
         //Ingredients starts here
         elseif ($this->property->id == 27    //Topisto Tomato Mix 70g
+        || $this->property->id == 38    //2g Ground Ogbono
+        || $this->property->id == 39    //38g Ground Pepper
+        || $this->property->id == 44    //Hand-broken melon
         || $this->property->id == 28){       //110ml Power Oil        
             $this->invest->ingredients = $this->invest->paid_amount;
             $this->invest->property_name = 'ingredients';
@@ -113,6 +118,13 @@ class PropertyInvest
         || $this->property->id == 34){       //700gms Checkers Custard 
             $this->invest->custard = $this->invest->paid_amount;
             $this->invest->property_name = 'custard';
+        }
+
+        //Leaf starts here
+        elseif ($this->property->id == 45    //Atama Leaf
+        || $this->property->id == 47){       //Afang Leaf
+            $this->invest->leaf = $this->invest->paid_amount;
+            $this->invest->property_name = 'leaf';
         }
 
         //Other Food Items. Eg. Manual Presser starts here
@@ -157,22 +169,22 @@ class PropertyInvest
         }
 
         //Addition of new feature for other kinds of partners for foodmall begin here
-        elseif($this->property->title == 'Basic Partner') {
+        elseif($this->property->id == 40) {
             $this->invest->basic_prtnr_fdreg = $this->invest->paid_amount;
             $this->invest->property_name = 'basic_prtnr_fdreg';
             $this->user->membership_type = 'Basic Partner';
         }
-        elseif($this->property->title == 'Silver Partner') {
+        elseif($this->property->id == 41) {
             $this->invest->silver_prtnr_fdreg = $this->invest->paid_amount;
             $this->invest->property_name = 'silver_prtnr_fdreg';
             $this->user->membership_type = 'Silver Partner';
         }
-        elseif($this->property->title == 'Gold Partner') {
+        elseif($this->property->id == 42) {
             $this->invest->gold_prtnr_fdreg = $this->invest->paid_amount;
             $this->invest->property_name = 'gold_prtnr_fdreg';
             $this->user->membership_type = 'Gold Partner';
         }
-        elseif($this->property->title == 'Diamond Partner') {
+        elseif($this->property->id == 43) {
             $this->invest->diamond_prtnr_fdreg = $this->invest->paid_amount;
             $this->invest->property_name = 'diamond_prtnr_fdreg';
             $this->user->membership_type = 'Diamond Partner';
@@ -296,6 +308,12 @@ class PropertyInvest
                 }
                 break;
                 
+            case 'leaf':
+                if (gs()->leaf_commission && $this->user->ref_by) {
+                    $this->foodComRefCommission('leaf_commission', $amount);
+                }
+                break;
+
             case 'basic_reg':
                 if (gs()->basic_reg_commission && $this->user->ref_by) {
                     $this->referralCommission('basic_reg_commission', $amount);

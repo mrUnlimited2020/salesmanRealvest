@@ -29,6 +29,7 @@ class ReferralController extends Controller
             'fish_commission'   => 'Fish Commission',
             'ingredients_commission'   => 'Ingredients Commission',
             'custard_commission'   => 'Custard Commission',
+            'leaf_commission'   => 'Leaf Commission',
             'basic_prtnr_fdreg_comm' => 'Basic Prtnr FdComm',
             'silver_prtnr_fdreg_comm' => 'Silver Prtnr FdComm',
             'gold_prtnr_fdreg_comm' => 'Gold Prtnr FdComm',
@@ -47,7 +48,7 @@ class ReferralController extends Controller
         $request->validate([
             'percent'         => 'required',
             'percent*'        => 'required|numeric',
-            'commission_type' => 'required|in:deposit_commission,basic_reg_commission,profit_commission,rentals_commission,voucher_commission,thrift_commission,easyland_commission,ass_mbmr_reg_commission,ass_prtnr_reg_commission,fufu_commission,grains_commission,_other_fdcom_items_commission,fish_commission,ingredients_commission,custard_commission,basic_prtnr_fdreg_comm,silver_prtnr_fdreg_comm,gold_prtnr_fdreg_comm,diamond_prtnr_fdreg_comm',
+            'commission_type' => 'required|in:deposit_commission,basic_reg_commission,profit_commission,rentals_commission,voucher_commission,thrift_commission,easyland_commission,ass_mbmr_reg_commission,ass_prtnr_reg_commission,fufu_commission,grains_commission,_other_fdcom_items_commission,fish_commission,ingredients_commission,custard_commission,basic_prtnr_fdreg_comm,silver_prtnr_fdreg_comm,gold_prtnr_fdreg_comm,diamond_prtnr_fdreg_comm,leaf_commission',
         ]);
         $type = $request->commission_type;
 
