@@ -49,7 +49,7 @@ class UserController extends Controller
                 ->whereHas('property', function($query) use ($propertyId) {
                     $query->where('id', '<=', $propertyId);
                 })
-                ->sum('paid_amount')*0.25; //note: this *0.25 was added to stepdown the amt
+                ->sum('paid_amount')*0.05; //note: this *0.05 was added to stepdown the amt
             
             // Return the total amount formatted to 2 decimal places
             $formattedAmount           = number_format($totalAmount, 2, '.', ',');
@@ -188,7 +188,7 @@ class UserController extends Controller
                 ->whereHas('property', function($query) use ($foodCommPropertyId) {
                     $query->where('id', '>=', $foodCommPropertyId);
                 })
-                ->sum('paid_amount');
+                ->sum('paid_amount')*0.05;//note: this *0.05 was added to stepdown the amt
             
             // Return the total amount formatted to 2 decimal places
             return number_format($totalAmountFoodComm, 2, '.', '');
