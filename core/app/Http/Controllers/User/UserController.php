@@ -36,13 +36,13 @@ class UserController extends Controller
         //the starting ID is from 18 downwards
         $propertyId                    = 18;
         $teamSalesVolume               = function($userId, $propertyId){
-            $directReferrals           = User::where('id', $userId)->pluck('id')->toArray();
+            $directReferrals           = User::where('ref_by', $userId)->pluck('id')->toArray();
 
             $secondLevelReferrals      = User::whereIn('ref_by', $directReferrals)->pluck('id')->toArray();
 
             $thirdLevelReferrals       = User::whereIn('ref_by', $secondLevelReferrals)->pluck('id')->toArray();
 
-            $allUserIds                = array_merge([$userId], $directReferrals, $secondLevelReferrals, $thirdLevelReferrals);
+            $allUserIds                = array_merge($directReferrals, $secondLevelReferrals, $thirdLevelReferrals); //[$userId], removed due to its already showing in Direct Sales Volume, and should not show for teams results
 
             // Calculate the total amount for investments in properties with IDs lesser than or equal to $propertyId
             $totalAmount               = Invest::whereIn('user_id', $allUserIds)
@@ -175,13 +175,13 @@ class UserController extends Controller
         $foodCommPropertyId = 19;
 
         $foodCommTeamSalesVolume = function($userId, $foodCommPropertyId) {
-            $directReferrals = User::where('id', $userId)->pluck('id')->toArray();
+            $directReferrals = User::where('ref_by', $userId)->pluck('id')->toArray();
 
             $secondLevelReferrals = User::whereIn('ref_by', $directReferrals)->pluck('id')->toArray();
 
             $thirdLevelReferrals = User::whereIn('ref_by', $secondLevelReferrals)->pluck('id')->toArray();
 
-            $allUserIds = array_merge([$userId], $directReferrals, $secondLevelReferrals, $thirdLevelReferrals);
+            $allUserIds = array_merge($directReferrals, $secondLevelReferrals, $thirdLevelReferrals); //[$userId], removed due to its already showing in Direct Sales Volume, and should not show for teams results
             
             // Calculate the total amount for investments in properties with IDs greater than or equal to $foodCommPropertyId
             $totalAmountFoodComm = Invest::whereIn('user_id', $allUserIds)
