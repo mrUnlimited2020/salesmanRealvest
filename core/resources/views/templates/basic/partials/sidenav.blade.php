@@ -11,7 +11,7 @@
                     <!--<span class="icon"><i class="fas fa-user"></i></span>-->
                     <span class="text">@lang('Welcome, '){{$user->firstname}} {{$user->lastname}}!</span>
                 </a>
-                <div class="text" style="text-align: center;">({{$user->membership_type}})</div>
+                <div class="text" style="text-align: center;">({{$user->partnership_type}})</div>
             </li>
             <li class="sidebar-menu-list__item">
                 <a href="{{ route('user.home') }}" class="sidebar-menu-list__link {{ menuActive('user.home') }}">

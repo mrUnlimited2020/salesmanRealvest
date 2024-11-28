@@ -79,9 +79,9 @@ class UserController extends Controller
         $user = User::find($userId);
 
         if ($user) {
-            $membershipType = $user->membership_type ?? 'Basic Member';
+            $partnershipType = $user->partnership_type ?? 'Basic Member';
             $PST = 0;
-            switch ($membershipType) {
+            switch ($partnershipType) {
                 case 'Basic Member':
                     $PST = 0.002 * $DSV;
                     break;
@@ -264,12 +264,12 @@ class UserController extends Controller
         $user = User::find($userId);
 
         if ($user) {
-            $membershipType = $user->membership_type ?? 'Basic Partner';
+            $partnershipType = $user->partnership_type ?? 'Basic Partner';
 
             $PSTofDSV = 0;
             $PSTofTSV = 0;
 
-            switch ($membershipType) {
+            switch ($partnershipType) {
                 case 'Basic Partner':
                     $PSTofDSV = 0.001 * $DSV;
                     $PSTofTSV = 0.001 * $TSV;
