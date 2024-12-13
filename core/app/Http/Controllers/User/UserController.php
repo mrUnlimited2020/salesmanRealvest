@@ -19,6 +19,8 @@ use Illuminate\Http\Request;
 use App\Models\SupportTicket;
 use App\Lib\GoogleAuthenticator;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+
 
 class UserController extends Controller
 {
@@ -36,20 +38,20 @@ class UserController extends Controller
         //the starting ID is from 18 downwards
         $propertyId                    = 18;
         $teamSalesVolume               = function($userId, $propertyId){
-            $directReferrals           = User::where('ref_by', $userId)->pluck('id')->toArray();
+            $directReferrals           = User::where('ref_by', $userId)->pluck('id')->toArray(); 
 
             $secondLevelReferrals      = User::whereIn('ref_by', $directReferrals)->pluck('id')->toArray();
 
             $thirdLevelReferrals       = User::whereIn('ref_by', $secondLevelReferrals)->pluck('id')->toArray();
 
-            $allUserIds                = array_merge($directReferrals, $secondLevelReferrals, $thirdLevelReferrals); //[$userId], removed due to its already showing in Direct Sales Volume, and should not show for teams results
+            $allUserIds                = array_merge($directReferrals, $secondLevelReferrals, $thirdLevelReferrals); //[$userId], removed due to it shows already for direct sales volume 
 
             // Calculate the total amount for investments in properties with IDs lesser than or equal to $propertyId
             $totalAmount               = Invest::whereIn('user_id', $allUserIds)
                 ->whereHas('property', function($query) use ($propertyId) {
                     $query->where('id', '<=', $propertyId);
                 })
-                ->sum('paid_amount')*0.05; //note: this *0.05 was added to stepdown the amt
+                ->sum('paid_amount')*0.05;//note: this *0.05 was added to stepdown the amt
             
             // Return the total amount formatted to 2 decimal places
             $formattedAmount           = number_format($totalAmount, 2, '.', ',');
@@ -85,6 +87,9 @@ class UserController extends Controller
                 case 'Basic Member':
                     $PST = 0.002 * $DSV;
                     break;
+                case 'Bronze Partner':
+                    $PST = 0.002 * $DSV;
+                    break;
                 case 'Basic Partner':
                     $PST = 0.002 * $DSV + 0.001 * $TSV;
                     break;
@@ -117,7 +122,7 @@ class UserController extends Controller
         $widget['total_withdraw']      = Withdrawal::where('user_id', $user->id)->where('status', Status::PAYMENT_SUCCESS)->sum('amount');
         $widget['total_profit']        = Invest::where('user_id', $user->id)->where('invest_status', Status::COMPLETED)->sum('total_profit');
         $widget['referral']            = User::where('ref_by', $user->id)->count();
-        $widget['referral_balance'] = $user->referral_balance;
+        $widget['referral_balance']    = $user->referral_balance;
         $widget['psq_invest']          = Invest::where('user_id', $user->id)->sum('psq_invest');
         $widget['thrift_invest']       = Invest::where('user_id', $user->id)->sum('thrift_invest');
         $widget['v_landlord_invest']   = Invest::where('user_id', $user->id)->sum('v_landlord_invest');
@@ -130,8 +135,8 @@ class UserController extends Controller
         })->where('status', Status::INSTALLMENT_PENDING)->orderBy('next_time')->with(['invest'])->first();
 
 
-        $trxReport['date'] = collect([]);
-        $investTrx         = Transaction::where('user_id', $user->id)
+        $trxReport['date']             = collect([]);
+        $investTrx                     = Transaction::where('user_id', $user->id)
             ->where(function ($query) {
                 $query->where('remark', 'down_payment')->orWhere('remark', 'installment');
             })
@@ -181,14 +186,14 @@ class UserController extends Controller
 
             $thirdLevelReferrals = User::whereIn('ref_by', $secondLevelReferrals)->pluck('id')->toArray();
 
-            $allUserIds = array_merge($directReferrals, $secondLevelReferrals, $thirdLevelReferrals); //[$userId], removed due to its already showing in Direct Sales Volume, and should not show for teams results
+            $allUserIds = array_merge($directReferrals, $secondLevelReferrals, $thirdLevelReferrals); //[$userId], removed due to it shows already for direct sales volume
             
             // Calculate the total amount for investments in properties with IDs greater than or equal to $foodCommPropertyId
             $totalAmountFoodComm = Invest::whereIn('user_id', $allUserIds)
                 ->whereHas('property', function($query) use ($foodCommPropertyId) {
                     $query->where('id', '>=', $foodCommPropertyId);
                 })
-                ->sum('paid_amount')*0.05;//note: this *0.05 was added to stepdown the amt
+                ->sum('paid_amount')*0.05; //note: this *0.05 was added to stepdown the amt
             
             // Return the total amount formatted to 2 decimal places
             return number_format($totalAmountFoodComm, 2, '.', '');
@@ -258,7 +263,6 @@ class UserController extends Controller
         $foodCommformattedAmountDirect       = $foodCommDirectSalesVolume($userId, $foodCommPropertyId);
         $totalAmountFoodCommDirect           = floatval(str_replace(',', '', $foodCommformattedAmountDirect)); // Convert foodCommformattedAmountDirect to float for comparison
         
-        // Define the DSV and TSV variables
         $DSV = $totalAmountFoodCommDirect;
         $TSV = $totalAmountFoodCommTeam;
         $user = User::find($userId);
@@ -268,9 +272,13 @@ class UserController extends Controller
 
             $PSTofDSV = 0;
             $PSTofTSV = 0;
-
+            
             switch ($partnershipType) {
                 case 'Basic Partner':
+                    $PSTofDSV = 0.001 * $DSV;
+                    $PSTofTSV = 0.001 * $TSV;
+                    break;
+                case 'Bronze Partner':
                     $PSTofDSV = 0.001 * $DSV;
                     $PSTofTSV = 0.001 * $TSV;
                     break;
@@ -289,6 +297,7 @@ class UserController extends Controller
                 default:
                     exit;
             }
+            
             $pt1 = number_format($PSTofDSV, 2);
             $pt2 = number_format($PSTofTSV, 2);
         }
@@ -406,10 +415,10 @@ class UserController extends Controller
             'amount' => 'required|numeric|min:0'
         ]);
 
-        $user = auth()->user(); 
+        $user = auth()->user();
         $recipient = User::where('username', $request->input('username'))->first(); // The recipient
         $amount = $request->input('amount');
-
+        
         // Check if the recipient is the same as the sender
         if ($recipient->id == $user->id) {
             $notify[] = ['error', 'Oga sir, You cannot transfer balance to yourself!'];
@@ -432,7 +441,7 @@ class UserController extends Controller
         $trx = getTrx(); // Function to generate a unique transaction ID
         $transaction = new Transaction();
         $transaction->user_id = $user->id;
-        $transaction->amount = -$amount; // Negative for debit
+        $transaction->amount = $amount; 
         $transaction->charge = 0;
         $transaction->post_balance = $user->transaction_wallet;
         $transaction->trx_type = '-';
@@ -453,8 +462,43 @@ class UserController extends Controller
         $transaction->details = 'N' . showAmount($amount) . ' received from ' . $user->username;
         $transaction->save();
         $notify[] = ['success', 'Transaction wallet Transfered Successfully!'];
-
         return redirect()->route('user.home')->withNotify($notify);   
+    }
+    
+    //To organize Stockist dashboard
+    public function goodsInStock(){
+        $pageTitle = 'Goods In Stock';
+        // Get the list of referred users using Eloquent 
+        $referredUserIds = User::where('ref_by', Auth::id())
+            ->pluck('id'); 
+        
+        // Get investments for referred users and join with users table to get additional details
+        $orders = Invest::whereIn('user_id', $referredUserIds) 
+            ->join('users', 'invests.user_id', '=', 'users.id') 
+            ->select('invests.investment_id','invests.property_name', 'invests.total_invest_amount', 'invests.created_at', 'users.username as buyer_name') 
+            ->get();
+        return view($this->activeTemplate . 'user.goodsinstock', compact('pageTitle', 'orders'));    
+    }
+    public function orderDetails(Request $request){
+        $pageTitle = 'Order Details';
+        
+        // Get the list of referred users using Eloquent 
+        $referredUserIds = User::where('ref_by', Auth::id())
+            ->pluck('id'); 
+        
+        // Get investments for referred users and join with users table to get additional details
+        $orders = Invest::whereIn('user_id', $referredUserIds) 
+            ->join('users', 'invests.user_id', '=', 'users.id') 
+            ->join('properties', 'invests.property_id', '=', 'properties.id') // Join with properties table
+            ->select('invests.investment_id', 'invests.total_invest_amount', 'invests.created_at', 'users.username as buyer_name', 'properties.title as property_title')
+            ->with('method');
+            
+        if ($request->search) {
+            $orders = $orders->where('invests.investment_id', $request->search);
+        }
+        // Order and paginate the results 
+        $orders = $orders->orderBy('invests.id', 'desc')->paginate(getPaginate());
+        return view($this->activeTemplate . 'user.orderdetails', compact('pageTitle', 'orders'));    
     }
 
     public function show2faForm()

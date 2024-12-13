@@ -20,11 +20,11 @@ class ReferralController extends Controller
             'ass_prtnr_reg_commission'  => 'Ass Prtnr Reg Commission',
             'rentals_commission'  => 'Rentals Commission',
             'voucher_commission'  => 'Voucher Commission',
-            'basic_prtnr_fdreg_comm' => 'Basic Prtnr FdComm',
+            'bronze_prtnr_fdreg_comm' => 'Bronze Prtnr FdComm',
             'silver_prtnr_fdreg_comm' => 'Silver Prtnr FdComm',
             'gold_prtnr_fdreg_comm' => 'Gold Prtnr FdComm',
             'diamond_prtnr_fdreg_comm' => 'Diamond Prtnr FdComm',
-            'basic_sales_comm' => 'Basic Sales',
+            'bronze_sales_comm' => 'Bronze Sales',
             'silver_sales_comm' => 'Silver Sales',
             'gold_sales_comm' => 'Gold Sales',
             'diamond_sales_comm' => 'Diamond Sales',
@@ -42,7 +42,7 @@ class ReferralController extends Controller
         $request->validate([
             'percent'         => 'required',
             'percent*'        => 'required|numeric',
-            'commission_type' => 'required|in:basic_reg_commission,rentals_commission,voucher_commission,easyland_commission,ass_mbmr_reg_commission,ass_prtnr_reg_commission,basic_prtnr_fdreg_comm,silver_prtnr_fdreg_comm,gold_prtnr_fdreg_comm,diamond_prtnr_fdreg_comm,basic_sales_comm,silver_sales_comm,gold_sales_comm,diamond_sales_comm',
+            'commission_type' => 'required|in:basic_reg_commission,rentals_commission,voucher_commission,easyland_commission,ass_mbmr_reg_commission,ass_prtnr_reg_commission,bronze_prtnr_fdreg_comm,silver_prtnr_fdreg_comm,gold_prtnr_fdreg_comm,diamond_prtnr_fdreg_comm,bronze_sales_comm,silver_sales_comm,gold_sales_comm,diamond_sales_comm',
         ]);
         $type = $request->commission_type;
 

@@ -72,6 +72,7 @@
                     </ul>
                 </div>
             </li>
+            
             <li class="sidebar-menu-list__item">
                 <a href="{{ route('user.transactions') }}" class="sidebar-menu-list__link {{ menuActive('user.transactions') }}">
                     <span class="icon"><i class="fas fa-exchange-alt"></i></span>
@@ -112,6 +113,30 @@
                     <span class="icon"><i class="fas fa-coins"></i></span>
                     <span class="text">@lang('Profit History')</span>
                 </a>
+            </li>
+
+            <!-- Stockist starts here -->
+            <li class="sidebar-menu-list__item has-dropdown">
+                <a href="javascript:void(0)" class="sidebar-menu-list__link {{ menuActive(['user.stockist1', 'user.stockist2'], 3) }}">
+                    <span class="icon"><i class="fas fa-wallet"></i></span>
+                    <span class="text">@lang('Stockist')</span>
+                </a>
+                <div class="sidebar-submenu {{ menuActive('user.stockist1*', 2) }}">
+                    <ul class="sidebar-submenu-list">
+                        <li class="sidebar-submenu-list__item">
+                            <a href="{{ route('user.stockist1') }}"
+                                class="sidebar-submenu-list__link {{ menuActive('user.stockist1') }}">
+                                <span class="text">@lang('Goods In Stock')</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-submenu-list__item">
+                            <a href="{{ route('user.stockist2') }}"
+                                class="sidebar-submenu-list__link {{ menuActive('user.stockist2*', 1) }}">
+                                <span class="text">@lang('Order Details')</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </li>
 
             <li class="sidebar-menu-list__item">
@@ -168,7 +193,6 @@
                     <span class="text">@lang('Logout')</span>
                 </a>
             </li>
-            
         </ul>
     </div>
 </div>

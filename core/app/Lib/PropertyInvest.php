@@ -83,7 +83,7 @@ class PropertyInvest
             $this->invest->odourless_fufu = $this->invest->paid_amount;
             $this->invest->property_name = 'odourless_fufu';
         }
-
+        
         //Grains start here 
         elseif  ($this->property->id == 22    //White Garri 12.5kg
         || $this->property->id == 21          //One paint bucket (Sealed)
@@ -119,7 +119,7 @@ class PropertyInvest
             $this->invest->custard = $this->invest->paid_amount;
             $this->invest->property_name = 'custard';
         }
-
+        
         //Leaf starts here
         elseif ($this->property->id == 45    //Atama Leaf
         || $this->property->id == 47){       //Afang Leaf
@@ -150,44 +150,44 @@ class PropertyInvest
             if($this->invest->paid_amount == 2500){
                 $this->invest->basic_reg_fee = $this->invest->paid_amount;
                 $this->invest->property_name = 'basic_reg';
-                $this->user->membership_type = 'Basic Member';
+                $this->user->partnership_type = 'Basic Member';
             }
             elseif($this->invest->paid_amount == 30000){
                 $this->invest->ass_mem_reg_fee = $this->invest->paid_amount;
                 $this->invest->property_name = 'associate_member_reg';
-                $this->user->membership_type = 'Associate Member';
+                $this->user->partnership_type = 'Associate Member';
             }
             elseif($this->invest->paid_amount == 45000){
                 $this->invest->ass_prtnr_reg_fee = $this->invest->paid_amount;
                 $this->invest->property_name = 'associate_partner_reg';
-                $this->user->membership_type = 'Associate Partner';
+                $this->user->partnership_type = 'Associate Partner';
             }
         }
         elseif  ($this->property->title == 'Easy Land') {
             $this->invest->easyland_invest = $this->invest->paid_amount;
             $this->invest->property_name = 'easyland_package';
         }
-
+        
         //Addition of new feature for other kinds of partners for foodmall begin here
         elseif($this->property->id == 40) {
             $this->invest->basic_prtnr_fdreg = $this->invest->paid_amount;
-            $this->invest->property_name = 'basic_prtnr_fdreg';
-            $this->user->membership_type = 'Basic Partner';
+            $this->invest->property_name = 'bronze_prtnr_fdreg';
+            $this->user->partnership_type = 'Bronze Partner';
         }
         elseif($this->property->id == 41) {
             $this->invest->silver_prtnr_fdreg = $this->invest->paid_amount;
             $this->invest->property_name = 'silver_prtnr_fdreg';
-            $this->user->membership_type = 'Silver Partner';
+            $this->user->partnership_type = 'Silver Partner';
         }
         elseif($this->property->id == 42) {
             $this->invest->gold_prtnr_fdreg = $this->invest->paid_amount;
             $this->invest->property_name = 'gold_prtnr_fdreg';
-            $this->user->membership_type = 'Gold Partner';
+            $this->user->partnership_type = 'Gold Partner';
         }
         elseif($this->property->id == 43) {
             $this->invest->diamond_prtnr_fdreg = $this->invest->paid_amount;
             $this->invest->property_name = 'diamond_prtnr_fdreg';
-            $this->user->membership_type = 'Diamond Partner';
+            $this->user->partnership_type = 'Diamond Partner';
         }
 
         $this->invest->save();
@@ -209,8 +209,8 @@ class PropertyInvest
         }
 
 
-        $this->user->transaction_wallet -= $amount;
-        $this->user->save();
+       $this->user->transaction_wallet -= $amount;
+       $this->user->save();
 
         $transaction               = new Transaction();
         $transaction->user_id      = $this->user->id;
@@ -245,7 +245,8 @@ class PropertyInvest
         }
 
         $commissionTypeMapping = [
-            'Basic Partner'   => 'basic_sales_comm',
+            'Basic Partner'   => 'bronze_sales_comm',
+            'Bronze Partner'   => 'bronze_sales_comm',
             'Silver Partner'  => 'silver_sales_comm',
             'Gold Partner'    => 'gold_sales_comm',
             'Diamond Partner' => 'diamond_sales_comm',
@@ -254,16 +255,16 @@ class PropertyInvest
         $partnershipType = $this->user->partnership_type;
         $commissionType = $commissionTypeMapping[$partnershipType] ?? 'default_commission'; // Provide a default commission type if needed
         
+        
         switch ($this->invest->property_name) {
             case 'thrift_package':
                 if (gs()->thrift_commission && $this->user->ref_by) {
                     $this->referralCommission('thrift_commission', $amount);
                 }
                 break;
-
-            case 'basic_prtnr_fdreg':
+            case 'bronze_prtnr_fdreg':
                 if (gs()->basic_prtnr_fdreg_comm && $this->user->ref_by) {
-                    $this->fdRegReferralCommission('basic_prtnr_fdreg_comm', $amount);
+                    $this->fdRegReferralCommission('bronze_prtnr_fdreg_comm', $amount);
                 }
                 break;
             case 'silver_prtnr_fdreg':
@@ -277,11 +278,10 @@ class PropertyInvest
                 }
                 break;
             case 'diamond_prtnr_fdreg':
-                if (gs()->diamond_prtnr_fdreg_comm && $this->user->ref_by) {
+                if (gs()->basic_prtnr_fdreg_comm && $this->user->ref_by) {
                     $this->fdRegReferralCommission('diamond_prtnr_fdreg_comm', $amount);
                 }
                 break;
-
             case 'odourless_fufu':
                 if (gs()->$commissionType && $this->user->ref_by) {
                     $this->foodComRefPartnerComm($commissionType, $amount);
@@ -323,7 +323,7 @@ class PropertyInvest
                     $this->foodComRefPartnerComm($commissionType, $amount);
                 }
                 break;
-
+                
             case 'basic_reg':
                 if (gs()->basic_reg_commission && $this->user->ref_by) {
                     $this->referralCommission('basic_reg_commission', $amount);
@@ -611,7 +611,7 @@ class PropertyInvest
             ]);
         }
     }
-
+    
     //foodCommunity registration referral comm starts here
     public function fdRegReferralCommission($commissionType, $amount, $trx = null)
     {
@@ -686,70 +686,69 @@ class PropertyInvest
         $level++;
     }
 }
+//foodmall comm based on partnership
+public function foodComRefPartnerComm($commissionType, $amount, $trx = null)
+{
+    $commissionTypeMapping = [
+        'Basic Partner'   => 'bronze_sales_comm',
+        'Bronze Partner'   => 'bronze_sales_comm',
+        'Silver Partner'  => 'silver_sales_comm',
+        'Gold Partner'    => 'gold_sales_comm',
+        'Diamond Partner' => 'diamond_sales_comm',
+    ];
 
-    //foodmall comm based on partnership
-    public function foodComRefPartnerComm($commissionType, $amount, $trx = null)
-    {
-        $commissionTypeMapping = [
-            'Basic Partner'   => 'basic_sales_comm',
-            'Silver Partner'  => 'silver_sales_comm',
-            'Gold Partner'    => 'gold_sales_comm',
-            'Diamond Partner' => 'diamond_sales_comm',
-        ];
+    $user = $this->user;
 
-        $user = $this->user;
+    $levelInfo = Referral::where('commission_type', $commissionType)->get();
+    $level = 0;
+
+    // Step 1: Give Level 1 commission to the owner of the account
+    if ($level < $levelInfo->count()) {
+        $shopMallCommission = ($levelInfo[$level]->percent / 100) * $amount;
+        $user->direct_sales_comm += $shopMallCommission;
+        $user->save();
+
+        $transaction = new Transaction();
+        $transaction->user_id = $user->id;
+        $transaction->amount = $shopMallCommission;
+        $transaction->post_balance = $user->direct_sales_comm;
+        $transaction->charge = 0;
+        $transaction->trx_type = '+';
+        $transaction->details = 'Level 1 Referral Commission From ' . $this->user->username . $commissionType;
+        $transaction->trx = $trx ?? $this->trx;
+        $transaction->remark = $commissionType;
+        $transaction->save();
+
+        $level++;
+    }
+
+    // Step 2: Loop through referrers for Level 2 and beyond
+    while (@$user->ref_by && $level < $levelInfo->count()) {
+        $user = User::find($user->ref_by);
+        $partnershipType = $user->partnership_type;
+        $commissionType = $commissionTypeMapping[$partnershipType] ?? 'default_commission';
 
         $levelInfo = Referral::where('commission_type', $commissionType)->get();
-        $level = 0;
 
-        // Step 1: Give Level 1 commission to the owner of the account
         if ($level < $levelInfo->count()) {
             $shopMallCommission = ($levelInfo[$level]->percent / 100) * $amount;
-            $user->direct_sales_comm += $shopMallCommission;
+            $user->referrals_sales_comm += $shopMallCommission;
             $user->save();
 
             $transaction = new Transaction();
             $transaction->user_id = $user->id;
             $transaction->amount = $shopMallCommission;
-            $transaction->post_balance = $user->direct_sales_comm;
+            $transaction->post_balance = $user->referrals_sales_comm;
             $transaction->charge = 0;
             $transaction->trx_type = '+';
-            $transaction->details = 'Level 1 Referral Commission From ' . $this->user->username . $commissionType;
+            $transaction->details = 'Level ' . ($level + 1) . ' Referral Commission From ' . $this->user->username . $commissionType;
             $transaction->trx = $trx ?? $this->trx;
             $transaction->remark = $commissionType;
             $transaction->save();
 
             $level++;
         }
-
-        // Step 2: Loop through referrers for Level 2 and beyond
-        while (@$user->ref_by && $level < $levelInfo->count()) {
-            $user = User::find($user->ref_by);
-            $partnershipType = $user->partnership_type;
-            $commissionType = $commissionTypeMapping[$partnershipType] ?? 'default_commission';
-
-            $levelInfo = Referral::where('commission_type', $commissionType)->get();
-
-            if ($level < $levelInfo->count()) {
-                $shopMallCommission = ($levelInfo[$level]->percent / 100) * $amount;
-                $user->referrals_sales_comm += $shopMallCommission;
-                $user->save();
-
-                $transaction = new Transaction();
-                $transaction->user_id = $user->id;
-                $transaction->amount = $shopMallCommission;
-                $transaction->post_balance = $user->referrals_sales_comm;
-                $transaction->charge = 0;
-                $transaction->trx_type = '+';
-                $transaction->details = 'Level ' . ($level + 1) . ' Referral Commission From ' . $this->user->username . $commissionType;
-                $transaction->trx = $trx ?? $this->trx;
-                $transaction->remark = $commissionType;
-                $transaction->save();
-
-                $level++;
-            }
-        }
-
     }
+
 }
 }
