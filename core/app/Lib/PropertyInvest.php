@@ -479,7 +479,8 @@ class PropertyInvest
                 $this->invest->save();
             }
 
-            $this->user->balance += $profitAmount;
+            //$this->user->balance += $profitAmount; //checkpoint where profit is cut off from bonus bal for independent withdrawals
+
             $this->user->save();
 
             $trx = getTrx();

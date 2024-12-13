@@ -27,7 +27,7 @@ class WithdrawController extends Controller
         $this->validate($request, [
             'method_code' => 'required',
             'amount' => 'required|numeric',
-            'wallet_type' => 'required|in:Investment wallet,Foodmall wallet' // Validate dropdown option
+            'wallet_type' => 'required|in:Investment Wallet,Foodmall Wallet,Profit Wallet' // Validate dropdown option
         ]);
         $method = WithdrawMethod::where('id', $request->method_code)->where('status', Status::ENABLE)->firstOrFail();
         $user = auth()->user();
@@ -37,6 +37,52 @@ class WithdrawController extends Controller
         if ($walletType === 'Foodmall Wallet') {
             $user->balance = $user->direct_sales_comm + $user->referrals_sales_comm;
         }
+
+        if ($walletType === 'Profit Wallet') {
+            $currentDate = now(); // Current date
+        
+            // Get all completed investments for the user
+            $investments = Invest::where('user_id', $user->id)
+                ->where('invest_status', Status::COMPLETED)
+                ->get();
+        
+            $totalEligibleProfit = 0; // Sum of profits eligible for withdrawal
+            $ineligibleInvestments = []; // Track investments that are ineligible
+        
+            foreach ($investments as $investment) {
+                // Extract numeric value from invest_duration string
+                preg_match('/\d+/', $investment->invest_duration, $matches);
+                $durationMonths = isset($matches[0]) ? (int)$matches[0] : 0;
+        
+                // Get the creation date of the investment
+                $createdDate = $investment->created_at;
+        
+                // Calculate the required completion date
+                $requiredCompletionDate = $createdDate->copy()->addMonths($durationMonths);
+        
+                // Check if the required duration has passed
+                if ($currentDate->greaterThanOrEqualTo($requiredCompletionDate)) {
+                    // Add profit from eligible investments
+                    $totalEligibleProfit += $investment->total_profit;
+                } else {
+                    // Track investments that are not yet eligible
+                    $ineligibleInvestments[] = $investment->id;
+                }
+            }
+        
+            if ($totalEligibleProfit > 0) {
+                // Allow withdrawal of eligible profits
+                $user->balance = $totalEligibleProfit;
+            } else {
+                // Notify user if no investments are eligible
+                $notify[] = ['error', 'No investments are eligible for profit withdrawal at this time.'];
+                return back()->withNotify($notify);
+            }
+        
+            if (!empty($ineligibleInvestments)) {
+                \Log::info("Ineligible Investments: " . implode(', ', $ineligibleInvestments));
+            }
+        }        
 
         if ($request->amount < $method->min_limit) {
             $notify[] = ['error', 'Your requested amount is smaller than minimum amount.'];
@@ -52,30 +98,6 @@ class WithdrawController extends Controller
             return back()->withNotify($notify);
         }
 
-        // Only run investment duration checks if the Investment wallet is selected
-        if ($walletType === 'Investment Wallet') {
-            $userProfit = Invest::where('user_id', $user->id)->where('invest_status', Status::COMPLETED)->sum('total_profit');
-            $currentDate = now(); // Current date
-
-            // Get all completed investments for the user
-            $investments = Invest::where('user_id', $user->id)->where('invest_status', Status::COMPLETED)->get();
-
-            if ($userProfit > 0) {
-                foreach ($investments as $investment) {
-                    // Get the creation date of the investment
-                    $createdDate = $investment->created_at;
-            
-                    // Calculate the difference in months
-                    $durationMonths = $createdDate->diffInMonths($currentDate);
-
-                    // Check against the invest_duration values
-                    if ($durationMonths < $investment->invest_duration) {
-                        $notify[] = ['error', 'Your investment duration before withdrawal is not yet complete.'];
-                        return back()->withNotify($notify);
-                    }
-                }
-            }
-        }
         $charge = $method->fixed_charge + ($request->amount * $method->percent_charge / 100);
         $afterCharge = $request->amount - $charge;
         $finalAmount = $afterCharge * $method->rate;
@@ -181,4 +203,31 @@ class WithdrawController extends Controller
         $withdraws = $withdraws->with('method')->orderBy('id', 'desc')->paginate(getPaginate());
         return view($this->activeTemplate . 'user.withdraw.log', compact('pageTitle', 'withdraws'));
     }
+}
+**************
+// Only run investment duration checks if the Profit wallet is selected
+if ($walletType === 'Profit Wallet') {
+    $userProfit = Invest::where('user_id', $user->id)->where('invest_status', Status::COMPLETED)->sum('total_profit');
+    $currentDate = now(); // Current date
+
+    // Get all completed investments for the user
+    $investments = Invest::where('user_id', $user->id)->where('invest_status', Status::COMPLETED)->get();
+
+    if ($userProfit > 0) {
+        foreach ($investments as $investment) {
+            // Get the creation date of the investment
+            $createdDate = $investment->created_at;
+    
+            // Calculate the difference in months
+            $durationMonths = $createdDate->diffInMonths($currentDate);
+
+            // Check against the invest_duration values
+            if ($durationMonths < $investment->invest_duration) {
+                $notify[] = ['error', 'Your investment duration before withdrawal is not yet complete.'];
+                return back()->withNotify($notify);
+            }
+        }
+    }
+    //Set balance based on wallet type for profit
+    $user->balance = $userProfit;
 }

@@ -19,6 +19,10 @@
                         <option data-title="Investment Wallet" value="Investment Wallet">
                             @lang('Investment Wallet')
                         </option>
+
+                        <option data-title="Profit Wallet" value="Profit Wallet">
+                            @lang('Profit Wallet')
+                        </option>
                     </select>
                 </div>
 
