@@ -9,6 +9,7 @@
                             <thead>
                                 <tr>
                                     <th>@lang('User')</th>
+                                    <th>@lang('Refered By')</th>
                                     <th>@lang('Email-Phone')</th>
                                     <th>@lang('Country')</th>
                                     <th>@lang('Joined At')</th>
@@ -19,6 +20,15 @@
                             <tbody>
                                 @forelse($users as $user)
                                     <tr>
+                                        <td>
+                                            <span class="fw-bold">{{ $user->fullname }}</span>
+                                            <br>
+                                            <span class="small">
+                                                <a href="{{ route('admin.users.detail', $user->id) }}">
+                                                    <span>@</span>{{ $user->username }}
+                                                </a>
+                                            </span>
+                                        </td>
                                         <td>
                                             <span class="fw-bold">{{ $user->fullname }}</span>
                                             <br>
