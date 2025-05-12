@@ -29,11 +29,13 @@ class UserController extends Controller
         $pageTitle                     = 'Dashboard';
         $user                          = auth()->user();
         $paidAmountSum                 = Invest::where('user_id', $user->id)->sum('paid_amount');
-        $registrationFeeSum            = Invest::where('user_id', $user->id)->sum('basic_reg_fee');
+        $registrationFeeSum            = Invest::where('user_id', $user->id)->sum('bronze_mbmr_reg_fee');
         $totalAfterFees                = $paidAmountSum - $registrationFeeSum;
         $totalInvestments              = Invest::where('user_id', $user->id)->count();
         $transactionWallet             = User::where('id', $user->id)->first()->transaction_wallet;
         $userId                        = $user->id;
+        $user->profit_wallet           = Invest::where('user_id', $user->id)->where('invest_status', Status::COMPLETED)->sum('total_profit');
+        $user->save(); // ✅ this commits the new value to the DB
         
         //the starting ID is from 18 downwards
         $propertyId                    = 18;
@@ -120,7 +122,7 @@ class UserController extends Controller
         $widget['trx_wallet']          = number_format($transactionWallet, 2); // 2 decimal places
         $widget['total_deposit']       = Deposit::where('user_id', $user->id)->where('status', Status::PAYMENT_SUCCESS)->sum('amount');
         $widget['total_withdraw']      = Withdrawal::where('user_id', $user->id)->where('status', Status::PAYMENT_SUCCESS)->sum('amount');
-        $widget['total_profit']        = Invest::where('user_id', $user->id)->where('invest_status', Status::COMPLETED)->sum('total_profit');
+        $widget['total_profit']        = $user->profit_wallet;
         $widget['referral']            = User::where('ref_by', $user->id)->count();
         $widget['referral_balance']    = $user->referral_balance;
         $widget['psq_invest']          = Invest::where('user_id', $user->id)->sum('psq_invest');
@@ -169,10 +171,8 @@ class UserController extends Controller
         $pageTitle                     = 'Mall Dashboard';
         $user                          = auth()->user();
         $paidAmountSum                 = Invest::where('user_id', $user->id)->sum('paid_amount');
-        $registrationFeeSum            = Invest::where('user_id', $user->id)->sum('basic_reg_fee');
         $directSalesComm               = $user->direct_sales_comm;
         $referralsSalesComm            = $user->referrals_sales_comm;
-        $totalAfterFees                = $paidAmountSum - $registrationFeeSum;
         $totalInvestments              = Invest::where('user_id', $user->id)->count();
         $userId                        = $user->id;
         

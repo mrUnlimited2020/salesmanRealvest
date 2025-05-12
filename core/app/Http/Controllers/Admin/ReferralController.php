@@ -15,11 +15,14 @@ class ReferralController extends Controller
         $referrals       = Referral::get();
         $commissionTypes = [
             'easyland_commission'  => 'Easyland Commission',
-            'basic_reg_commission'  => 'Basic Reg Commission',
-            'ass_mbmr_reg_commission'  => 'Ass Mbmr Reg Commission',
-            'ass_prtnr_reg_commission'  => 'Ass Prtnr Reg Commission',
+            'bronze_mbmr_reg_commission'  => 'Bronze Mbmr Reg Commission',
+            'silver_mbmr_reg_commission'  => 'Silver Mbmr Reg Commission',
+            'gold_mbmr_reg_commission'  => 'Gold Mbmr Reg Commission',
             'rentals_commission'  => 'Rentals Commission',
             'voucher_commission'  => 'Voucher Commission',
+            'bronze_sales_invest_comm' => 'Bronze Sales Invest',
+            'silver_sales_invest_comm' => 'Silver Sales Invest',
+            'gold_sales_invest_comm' => 'Gold Sales Invest',
             'bronze_prtnr_fdreg_comm' => 'Bronze Prtnr FdComm',
             'silver_prtnr_fdreg_comm' => 'Silver Prtnr FdComm',
             'gold_prtnr_fdreg_comm' => 'Gold Prtnr FdComm',
@@ -42,7 +45,7 @@ class ReferralController extends Controller
         $request->validate([
             'percent'         => 'required',
             'percent*'        => 'required|numeric',
-            'commission_type' => 'required|in:basic_reg_commission,rentals_commission,voucher_commission,easyland_commission,ass_mbmr_reg_commission,ass_prtnr_reg_commission,bronze_prtnr_fdreg_comm,silver_prtnr_fdreg_comm,gold_prtnr_fdreg_comm,diamond_prtnr_fdreg_comm,bronze_sales_comm,silver_sales_comm,gold_sales_comm,diamond_sales_comm',
+            'commission_type' => 'required|in:bronze_mbmr_reg_commission,rentals_commission,voucher_commission,easyland_commission,silver_mbmr_reg_commission,gold_mbmr_reg_commission,bronze_sales_invest_comm,silver_sales_invest_comm,gold_sales_invest_comm,bronze_prtnr_fdreg_comm,silver_prtnr_fdreg_comm,gold_prtnr_fdreg_comm,diamond_prtnr_fdreg_comm,bronze_sales_comm,silver_sales_comm,gold_sales_comm,diamond_sales_comm',
         ]);
         $type = $request->commission_type;
 
